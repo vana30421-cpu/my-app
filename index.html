@@ -17,7 +17,7 @@
         body {
             background-color: var(--bg);
             color: var(--text);
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0; padding: 0;
             overflow: hidden; height: 100vh;
         }
@@ -27,27 +27,35 @@
         .top-bar {
             position: fixed; top: 0; width: 100%; height: 50px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; z-index: 100; box-sizing: border-box;
-            background: linear-gradient(to bottom, var(--bg), transparent);
+            padding: 0 15px; z-index: 100; box-sizing: border-box;
+            background: var(--bg);
         }
-        .icon-btn { background: var(--glass); border: none; color: var(--text); width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .icon-btn { background: var(--glass); border: none; color: var(--text); width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
 
         .screen-container {
             position: relative; z-index: 10; height: 100vh;
             padding: 60px 16px 140px 16px; box-sizing: border-box;
-            overflow-y: auto; scroll-behavior: smooth;
+            overflow-y: auto;
         }
-        .screen { display: none; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .screen.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .profile-card {
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ОБНОВЛЕННЫЙ ПРОФИЛЬ */
+        .profile-header {
             background: linear-gradient(135deg, #0ea5e9, #6366f1);
-            border-radius: 28px; padding: 22px;
-            margin-bottom: 20px; box-shadow: 0 12px 40px rgba(14, 165, 233, 0.25);
+            border-radius: 24px; padding: 20px;
+            margin-bottom: 20px; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.25);
         }
-        .user-info { display: flex; align-items: center; gap: 15px; }
-        .user-img { width: 54px; height: 54px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); object-fit: cover; }
+        .user-ava { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
+        .user-data { flex-grow: 1; }
+        .u-id-tag { font-size: 9px; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px; margin-top: 4px; display: inline-block; font-family: monospace; }
+
+        .card-box { background: var(--sec-bg); border-radius: 22px; padding: 5px 18px; border: 1px solid var(--glass); margin-bottom: 12px; }
+        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .row-item:last-child { border: none; }
 
         .nav-dock {
             position: fixed; bottom: 20px; left: 16px; right: 16px;
@@ -56,35 +64,19 @@
             padding: 12px 5px; border-radius: 24px;
             border: 1px solid var(--glass); z-index: 1000;
         }
-        .nav-link { color: var(--text); opacity: 0.4; text-align: center; flex: 1; transition: 0.3s; cursor: pointer; }
-        .nav-link.active { opacity: 1; color: var(--accent); transform: translateY(-3px); }
-        .nav-link i { font-size: 20px; margin-bottom: 4px; display: block; }
+        .nav-link { color: var(--text); opacity: 0.4; text-align: center; flex: 1; cursor: pointer; transition: 0.2s; }
+        .nav-link.active { opacity: 1; color: var(--accent); }
+        .nav-link i { font-size: 20px; display: block; margin-bottom: 4px; }
         .nav-link span { font-size: 9px; font-weight: 600; text-transform: uppercase; }
 
-        .card-box { background: var(--sec-bg); border-radius: 22px; padding: 8px 18px; border: 1px solid var(--glass); margin-bottom: 15px; }
-        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .row-item:last-child { border: none; }
-
-        /* Footer Copyright */
-        .copyright-footer {
-            margin-top: 30px;
-            padding-bottom: 20px;
-            text-align: center;
-            font-size: 10px;
-            letter-spacing: 1px;
-            opacity: 0.3;
-            text-transform: uppercase;
-        }
+        .footer { text-align: center; font-size: 10px; opacity: 0.3; padding: 20px 0; letter-spacing: 1px; font-weight: 700; }
 
         input[type="checkbox"] {
-            appearance: none; width: 42px; height: 22px; background: #334155;
-            border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s;
+            appearance: none; width: 40px; height: 20px; background: #334155;
+            border-radius: 20px; position: relative; cursor: pointer;
         }
         input[type="checkbox"]:checked { background: var(--accent); }
-        input[type="checkbox"]::before {
-            content: ''; position: absolute; width: 16px; height: 16px;
-            background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s;
-        }
+        input[type="checkbox"]::before { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
         input[type="checkbox"]:checked::before { left: 23px; }
     </style>
 </head>
@@ -94,88 +86,84 @@
 
 <div class="top-bar">
     <button class="icon-btn" onclick="tg.close()"><i class="fa-solid fa-xmark"></i></button>
-    <div style="font-size: 9px; font-weight: 700; letter-spacing: 2px; opacity: 0.3;">CREATOR ENGINE</div>
+    <div style="font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--accent);">BOTFACTORY SYSTEM</div>
     <button class="icon-btn" onclick="tg.close()"><i class="fa-solid fa-minus"></i></button>
 </div>
 
 <div class="screen-container">
-    
+
+    <div id="common-profile" class="profile-header">
+        <img id="u-ava" class="user-ava" src="https://ui-avatars.com/api/?name=B&background=0ea5e9&color=fff">
+        <div class="user-data">
+            <div id="u-nick" style="font-weight: 800; font-size: 17px;">@loading...</div>
+            <div class="u-id-tag">ID: <span id="u-id">00000000</span></div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 9px; opacity: 0.7;">БАЛАНС</div>
+            <div style="font-size: 18px; font-weight: 900;">0.00 ₽</div>
+        </div>
+    </div>
+
     <div id="scr-bots" class="screen active">
-        <div class="profile-card">
-            <div class="user-info">
-                <img id="u-ava" class="user-img" src="https://ui-avatars.com/api/?name=C&background=0ea5e9&color=fff">
-                <div>
-                    <div id="u-nick" style="font-weight: 800; font-size: 18px;">@loading</div>
-                    <div style="font-size: 11px; opacity: 0.7;">Premium Creator</div>
-                </div>
-            </div>
-            <div style="margin-top: 20px;">
-                <div style="font-size: 10px; opacity: 0.6;">ТЕКУЩИЙ БАЛАНС</div>
-                <div style="font-size: 34px; font-weight: 900;">0.00 ₽</div>
-            </div>
+        <h3>Мои боты</h3>
+        <div class="card-box" style="padding: 40px 10px; text-align: center; opacity: 0.5;">
+            <i class="fa-solid fa-box-open" style="font-size: 30px; margin-bottom: 10px;"></i><br>
+            <span style="font-size: 13px;">Боты не обнаружены</span>
         </div>
-        <div class="card-box" style="padding: 30px; text-align: center; opacity: 0.4;">
-            <i class="fa-solid fa-layer-group" style="font-size: 30px; margin-bottom: 10px;"></i>
-            <div style="font-size: 13px;">Список ботов пуст</div>
-        </div>
-        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
+        <div class="footer">© BOTFACTORY. Все права защищены</div>
     </div>
 
     <div id="scr-add" class="screen">
-        <h2 style="padding-left: 10px;">Конструктор</h2>
+        <h3>Конструктор функций</h3>
         <div class="card-box">
-            <div class="row-item"><span>🚀 Быстрый запуск</span><i class="fa-solid fa-bolt" style="color: #fbbf24;"></i></div>
-            <div class="row-item"><span>💎 Приватный бот</span><i class="fa-solid fa-gem" style="color: #a855f7;"></i></div>
-            <div class="row-item"><span>🛠 Кастомная сборка</span><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <div class="row-item"><span>🚀 Быстрый запуск</span><i class="fa-solid fa-rocket"></i></div>
+            <div class="row-item"><span>📢 Модуль рассылок</span><i class="fa-solid fa-bullhorn"></i></div>
+            <div class="row-item"><span>🔑 API Интеграция</span><i class="fa-solid fa-code"></i></div>
+            <div class="row-item"><span>💳 Платежные системы</span><i class="fa-solid fa-credit-card"></i></div>
         </div>
-        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
-    </div>
-
-    <div id="scr-sets" class="screen">
-        <h2 style="padding-left: 10px;">Настройки</h2>
-        <div class="card-box">
-            <div class="row-item"><span>Уведомления</span><input type="checkbox" checked></div>
-            <div class="row-item"><span>Эффект снега</span><input type="checkbox" id="snow-check" checked onchange="setSnow(this)"></div>
-            <div class="row-item"><span>Звуки интерфейса</span><input type="checkbox"></div>
-        </div>
-        <div class="card-box">
-            <div class="row-item"><span>Тема оформления</span><span style="color:var(--accent)">NEON NIGHT</span></div>
-        </div>
+        <div class="footer">© BOTFACTORY. Все права защищены</div>
     </div>
 
     <div id="scr-stat" class="screen">
-        <h2 style="padding-left: 10px;">Аналитика</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <div class="card-box" style="margin:0; padding:15px;"><b>0</b><br><small>Клиенты</small></div>
-            <div class="card-box" style="margin:0; padding:15px;"><b>0</b><br><small>Запросы</small></div>
-        </div>
+        <h3>Глобальная стата</h3>
         <div class="card-box">
-            <div style="font-size: 12px; margin-bottom: 10px; opacity: 0.5;">ЛОГ СОБЫТИЙ</div>
-            <div style="font-size: 11px; color: var(--accent);">• Система инициализирована...</div>
+            <div class="row-item"><span>Активных сессий</span><b>0</b></div>
+            <div class="row-item"><span>Всего транзакций</span><b>0</b></div>
+            <div class="row-item"><span>Нагрузка CPU</span><b>2%</b></div>
         </div>
-        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
+        <div class="footer">© BOTFACTORY. Все права защищены</div>
     </div>
 
     <div id="scr-info" class="screen">
-        <h2 style="padding-left: 10px;">Инфо</h2>
+        <h3>Система</h3>
         <div class="card-box">
-            <div class="row-item"><span>Биосс</span><span style="color: #10b981;">0.1 BETA</span></div>
+            <div class="row-item"><span>Версия ядра</span><span style="color:#10b981">0.1 BETA</span></div>
             <div class="row-item" onclick="tg.openTelegramLink('https://t.me/Egorikvr')">
-                <span>Поддержка</span><span style="color: var(--accent);">@Egorikvr <i class="fa-solid fa-external-link" style="font-size: 10px;"></i></span>
+                <span>Тех. поддержка</span><span style="color:var(--accent)">@Egorikvr</span>
             </div>
-            <div class="row-item"><span>Статус</span><span style="color: #10b981;">ONLINE</span></div>
+            <div class="row-item"><span>База данных</span><span style="color:#fbbf24">D1 Cloud</span></div>
         </div>
-        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
+        <div class="footer">© BOTFACTORY. Все права защищены</div>
+    </div>
+
+    <div id="scr-sets" class="screen">
+        <h3>Конфигурация</h3>
+        <div class="card-box">
+            <div class="row-item"><span>Уведомления</span><input type="checkbox" checked></div>
+            <div class="row-item"><span>Эффект снега</span><input type="checkbox" checked onchange="setSnow(this)"></div>
+            <div class="row-item"><span>Авто-обновление</span><input type="checkbox" checked></div>
+            <div class="row-item"><span>Безопасный режим</span><input type="checkbox"></div>
+        </div>
     </div>
 
 </div>
 
 <div class="nav-dock">
-    <div class="nav-link" onclick="tab('add', this)"><i class="fa-solid fa-plus-circle"></i><span>Создать</span></div>
+    <div class="nav-link" onclick="tab('add', this)"><i class="fa-solid fa-plus-square"></i><span>Создать</span></div>
     <div class="nav-link active" onclick="tab('bots', this)"><i class="fa-solid fa-robot"></i><span>Боты</span></div>
     <div class="nav-link" onclick="tab('sets', this)"><i class="fa-solid fa-sliders"></i><span>Сеты</span></div>
-    <div class="nav-link" onclick="tab('stat', this)"><i class="fa-solid fa-chart-bar"></i><span>Стата</span></div>
-    <div class="nav-link" onclick="tab('info', this)"><i class="fa-solid fa-circle-info"></i><span>Инфо</span></div>
+    <div class="nav-link" onclick="tab('stat', this)"><i class="fa-solid fa-chart-pie"></i><span>Стата</span></div>
+    <div class="nav-link" onclick="tab('info', this)"><i class="fa-solid fa-microchip"></i><span>Инфо</span></div>
 </div>
 
 <script>
@@ -185,12 +173,14 @@
     const user = tg.initDataUnsafe?.user;
     if(user) {
         document.getElementById('u-nick').innerText = user.username ? '@' + user.username : user.first_name;
+        document.getElementById('u-id').innerText = user.id;
         if(user.photo_url) document.getElementById('u-ava').src = user.photo_url;
     }
 
     function tab(name, el) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        document.getElementById('common-profile').style.display = (name === 'sets') ? 'none' : 'flex';
         document.getElementById('scr-' + name).classList.add('active');
         el.classList.add('active');
         tg.HapticFeedback.impactOccurred('light');
