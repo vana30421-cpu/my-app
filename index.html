@@ -1,49 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; background: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); text-align: center; padding: 20px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .menu-item { background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; }
-        .price { font-size: 20px; font-weight: bold; color: #0088cc; }
-        .btn-close { margin-top: 30px; padding: 10px 20px; border: none; background: #cc0000; color: white; border-radius: 8px; width: 100%; }
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #f5f7fa);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #1a1a1a);
+            --hint-color: var(--tg-theme-hint-color, #707579);
+            --accent: var(--tg-theme-button-color, #0088cc);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 16px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Карточка баланса */
+        .header-card {
+            background: linear-gradient(135deg, var(--accent), #54a3ff);
+            color: var(--accent-text);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 136, 204, 0.2);
+            text-align: left;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-card::after {
+            content: ''; position: absolute; top: -50%; right: -20%;
+            width: 150px; height: 150px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+        }
+
+        .balance-label { font-size: 13px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-size: 32px; font-weight: 800; margin: 5px 0; }
+
+        /* Сетка меню */
+        .menu-title { font-size: 18px; font-weight: 700; margin: 0 0 15px 5px; text-align: left; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--secondary-bg);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease, box-shadow 0.2s;
+            border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .card:active { transform: scale(0.95); background: rgba(0,0,0,0.02); }
+
+        .card i {
+            font-size: 24px;
+            color: var(--accent);
+            margin-bottom: 12px;
+            background: rgba(0, 136, 204, 0.1);
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 14px;
+        }
+
+        .card span { font-size: 14px; font-weight: 600; }
+
+        /* Кнопка вывода */
+        .withdraw-btn {
+            margin-top: 24px;
+            background: var(--secondary-bg);
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            padding: 15px;
+            border-radius: 15px;
+            width: 100%;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        .footer-info { margin-top: 30px; color: var(--hint-color); font-size: 12px; }
     </style>
 </head>
 <body>
-    <h3>Привет, <span id="name">...</span>!</h3>
+
+    <div class="header-card">
+        <div class="balance-label">Доступно для выплаты</div>
+        <div class="balance-value" id="user-balance">0.00 ₽</div>
+        <div style="font-size: 12px; opacity: 0.9;">Рекламный баланс: <span id="ads-balance">0.00</span> ₽</div>
+    </div>
+
+    <div class="menu-title">Заработок</div>
     
-    <div class="menu-item">
-        <div class="price" id="balance">0.00 ₽</div>
-        <div>Ваш баланс</div>
+    <div class="grid">
+        <div class="card" onclick="tg.HapticFeedback.impactOccurred('light')">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span>Каналы</span>
+        </div>
+        <div class="card" onclick="tg.HapticFeedback.impactOccurred('light')">
+            <i class="fa-solid fa-eye"></i>
+            <span>Просмотры</span>
+        </div>
+        <div class="card" onclick="tg.HapticFeedback.impactOccurred('light')">
+            <i class="fa-solid fa-robot"></i>
+            <span>Боты</span>
+        </div>
+        <div class="card" onclick="tg.HapticFeedback.impactOccurred('light')">
+            <i class="fa-solid fa-users"></i>
+            <span>Группы</span>
+        </div>
     </div>
 
-    <div class="menu-grid">
-        <div class="menu-item">📢<br>Подписки</div>
-        <div class="menu-item">👁️<br>Просмотры</div>
-        <div class="menu-item">🤖<br>Боты</div>
-        <div class="menu-item">👥<br>Группы</div>
-    </div>
+    <button class="withdraw-btn" onclick="tg.HapticFeedback.notificationOccurred('success')">
+        <i class="fa-solid fa-wallet"></i> Вывести средства
+    </button>
 
-    <button class="btn-close" onclick="window.Telegram.WebApp.close()">Выйти в бота</button>
+    <div class="footer-info">
+        ID: <span id="user-id">000000</span> | Bot v2.0
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        
+        tg.ready();
+
+        // Данные пользователя
         const user = tg.initDataUnsafe?.user;
         if (user) {
-            document.getElementById('name').innerText = user.first_name;
-            
-            // Запрос баланса из твоего воркера
-            // ЗАМЕНИ НА ССЫЛКУ СВОЕГО CLOUDFLARE
+            document.getElementById('user-id').innerText = user.id;
+
+            // Запрос реальных данных из твоего воркера
+            // ЗАМЕНИ НА СВОЙ URL ВОРКЕРА
             fetch(`https://твой-воркер.workers.dev/api/user?id=${user.id}`)
                 .then(r => r.json())
                 .then(data => {
-                    document.getElementById('balance').innerText = data.balance.toFixed(2) + ' ₽';
-                });
+                    document.getElementById('user-balance').innerText = (data.balance || 0).toFixed(2) + ' ₽';
+                    document.getElementById('ads-balance').innerText = (data.adBalance || 0).toFixed(2);
+                })
+                .catch(e => console.error("API Error"));
         }
+
+        // Автоматическая подстройка цветов под тему Telegram
+        tg.setHeaderColor('secondary_bg_color');
     </script>
 </body>
 </html>
