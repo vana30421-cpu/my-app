@@ -24,7 +24,6 @@
 
         #snow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 
-        /* Верхняя панель (Чистый стиль) */
         .top-bar {
             position: fixed; top: 0; width: 100%; height: 50px;
             display: flex; justify-content: space-between; align-items: center;
@@ -35,14 +34,13 @@
 
         .screen-container {
             position: relative; z-index: 10; height: 100vh;
-            padding: 60px 16px 120px 16px; box-sizing: border-box;
+            padding: 60px 16px 140px 16px; box-sizing: border-box;
             overflow-y: auto; scroll-behavior: smooth;
         }
         .screen { display: none; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .screen.active { display: block; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Карточка профиля */
         .profile-card {
             background: linear-gradient(135deg, #0ea5e9, #6366f1);
             border-radius: 28px; padding: 22px;
@@ -51,7 +49,6 @@
         .user-info { display: flex; align-items: center; gap: 15px; }
         .user-img { width: 54px; height: 54px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); object-fit: cover; }
 
-        /* Навигация (Bottom) */
         .nav-dock {
             position: fixed; bottom: 20px; left: 16px; right: 16px;
             background: rgba(22, 30, 45, 0.9); backdrop-filter: blur(20px);
@@ -64,12 +61,21 @@
         .nav-link i { font-size: 20px; margin-bottom: 4px; display: block; }
         .nav-link span { font-size: 9px; font-weight: 600; text-transform: uppercase; }
 
-        /* Списки и настройки */
         .card-box { background: var(--sec-bg); border-radius: 22px; padding: 8px 18px; border: 1px solid var(--glass); margin-bottom: 15px; }
         .row-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .row-item:last-child { border: none; }
 
-        /* Переключатели */
+        /* Footer Copyright */
+        .copyright-footer {
+            margin-top: 30px;
+            padding-bottom: 20px;
+            text-align: center;
+            font-size: 10px;
+            letter-spacing: 1px;
+            opacity: 0.3;
+            text-transform: uppercase;
+        }
+
         input[type="checkbox"] {
             appearance: none; width: 42px; height: 22px; background: #334155;
             border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s;
@@ -88,7 +94,7 @@
 
 <div class="top-bar">
     <button class="icon-btn" onclick="tg.close()"><i class="fa-solid fa-xmark"></i></button>
-    <div style="font-size: 10px; font-weight: 700; letter-spacing: 2px; opacity: 0.4;">BETA INTERFACE</div>
+    <div style="font-size: 9px; font-weight: 700; letter-spacing: 2px; opacity: 0.3;">CREATOR ENGINE</div>
     <button class="icon-btn" onclick="tg.close()"><i class="fa-solid fa-minus"></i></button>
 </div>
 
@@ -112,6 +118,7 @@
             <i class="fa-solid fa-layer-group" style="font-size: 30px; margin-bottom: 10px;"></i>
             <div style="font-size: 13px;">Список ботов пуст</div>
         </div>
+        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
     </div>
 
     <div id="scr-add" class="screen">
@@ -121,14 +128,14 @@
             <div class="row-item"><span>💎 Приватный бот</span><i class="fa-solid fa-gem" style="color: #a855f7;"></i></div>
             <div class="row-item"><span>🛠 Кастомная сборка</span><i class="fa-solid fa-screwdriver-wrench"></i></div>
         </div>
+        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
     </div>
 
     <div id="scr-sets" class="screen">
         <h2 style="padding-left: 10px;">Настройки</h2>
         <div class="card-box">
             <div class="row-item"><span>Уведомления</span><input type="checkbox" checked></div>
-            <div class="row-item"><span>Эффект снега</span><input type="checkbox" checked onchange="setSnow(this)"></div>
-            <div class="row-item"><span>Энергосбережение</span><input type="checkbox"></div>
+            <div class="row-item"><span>Эффект снега</span><input type="checkbox" id="snow-check" checked onchange="setSnow(this)"></div>
             <div class="row-item"><span>Звуки интерфейса</span><input type="checkbox"></div>
         </div>
         <div class="card-box">
@@ -145,22 +152,20 @@
         <div class="card-box">
             <div style="font-size: 12px; margin-bottom: 10px; opacity: 0.5;">ЛОГ СОБЫТИЙ</div>
             <div style="font-size: 11px; color: var(--accent);">• Система инициализирована...</div>
-            <div style="font-size: 11px; margin-top: 5px;">• Ожидание входящих данных...</div>
         </div>
+        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
     </div>
 
     <div id="scr-info" class="screen">
         <h2 style="padding-left: 10px;">Инфо</h2>
         <div class="card-box">
-            <div class="row-item"><span>Версия билда</span><span style="color: #10b981;">0.1 BETA</span></div>
+            <div class="row-item"><span>Биосс</span><span style="color: #10b981;">0.1 BETA</span></div>
             <div class="row-item" onclick="tg.openTelegramLink('https://t.me/Egorikvr')">
                 <span>Поддержка</span><span style="color: var(--accent);">@Egorikvr <i class="fa-solid fa-external-link" style="font-size: 10px;"></i></span>
             </div>
-            <div class="row-item"><span>Статус сервера</span><span style="color: #10b981;">ONLINE</span></div>
+            <div class="row-item"><span>Статус</span><span style="color: #10b981;">ONLINE</span></div>
         </div>
-        <div style="padding: 10px; font-size: 11px; opacity: 0.4; text-align: center;">
-            Разработано специально для Creator Hub. Все права защищены.
-        </div>
+        <div class="copyright-footer">© vana30421-cpu. Все права защищены</div>
     </div>
 
 </div>
@@ -177,7 +182,6 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Загрузка данных ТГ
     const user = tg.initDataUnsafe?.user;
     if(user) {
         document.getElementById('u-nick').innerText = user.username ? '@' + user.username : user.first_name;
@@ -196,7 +200,6 @@
         document.getElementById('snow').style.display = el.checked ? 'block' : 'none';
     }
 
-    // Снег (v.2 Оптимизированный)
     const canvas = document.getElementById('snow');
     const ctx = canvas.getContext('2d');
     let flakes = [];
