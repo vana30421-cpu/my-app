@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; background: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); text-align: center; padding: 20px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .menu-item { background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; }
+        .price { font-size: 20px; font-weight: bold; color: #0088cc; }
+        .btn-close { margin-top: 30px; padding: 10px 20px; border: none; background: #cc0000; color: white; border-radius: 8px; width: 100%; }
+    </style>
+</head>
+<body>
+    <h3>Привет, <span id="name">...</span>!</h3>
+    
+    <div class="menu-item">
+        <div class="price" id="balance">0.00 ₽</div>
+        <div>Ваш баланс</div>
+    </div>
+
+    <div class="menu-grid">
+        <div class="menu-item">📢<br>Подписки</div>
+        <div class="menu-item">👁️<br>Просмотры</div>
+        <div class="menu-item">🤖<br>Боты</div>
+        <div class="menu-item">👥<br>Группы</div>
+    </div>
+
+    <button class="btn-close" onclick="window.Telegram.WebApp.close()">Выйти в бота</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('name').innerText = user.first_name;
+            
+            // Запрос баланса из твоего воркера
+            // ЗАМЕНИ НА ССЫЛКУ СВОЕГО CLOUDFLARE
+            fetch(`https://твой-воркер.workers.dev/api/user?id=${user.id}`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('balance').innerText = data.balance.toFixed(2) + ' ₽';
+                });
+        }
+    </script>
+</body>
+</html>
