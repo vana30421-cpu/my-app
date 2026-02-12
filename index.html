@@ -11,187 +11,196 @@
             --sec-bg: var(--tg-theme-secondary-bg-color, #1e293b);
             --text: var(--tg-theme-text-color, #f8fafc);
             --accent: #38bdf8;
-            --glass: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             margin: 0; padding: 16px;
-            overflow-x: hidden;
-            animation: fadeIn 0.5s ease-in;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease;
         }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         #snow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .content { position: relative; z-index: 1; }
+        .content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; }
 
-        /* Профиль в углу */
-        .profile-badge {
-            position: absolute; top: 0; right: 0;
-            background: var(--glass);
-            padding: 5px 12px; border-radius: 20px;
-            display: flex; align-items: center; gap: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .profile-badge img { width: 24px; height: 24px; border-radius: 50%; }
-
-        .header { margin-top: 40px; margin-bottom: 25px; }
-        .balance-card {
+        /* Цельный блок профиля и баланса */
+        .main-card {
             background: linear-gradient(135deg, #0ea5e9, #2563eb);
-            padding: 25px; border-radius: 24px;
-            box-shadow: 0 15px 30px rgba(14, 165, 233, 0.2);
-            transform: translateY(0);
-            transition: transform 0.3s;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
         }
-        .balance-card:active { transform: translateY(5px); }
 
-        /* Сетка меню */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .profile-section {
+            display: flex; align-items: center; gap: 12px;
+            padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 15px;
+        }
+        .avatar-circle {
+            width: 40px; height: 40px; background: rgba(255,255,255,0.2);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .balance-label { font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-size: 32px; font-weight: 800; margin-top: 4px; }
+
+        /* Сетка кнопок */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .card {
             background: var(--sec-bg);
             border: 1px solid var(--glass);
-            padding: 20px; border-radius: 20px;
+            padding: 22px 15px; border-radius: 20px;
             text-align: center; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
         }
-        .card:active { transform: scale(0.95); opacity: 0.8; }
-        .card i { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
+        .card:active { transform: scale(0.95); background: rgba(255,255,255,0.02); }
+        .card i { font-size: 24px; color: var(--accent); }
+        .card span { font-size: 14px; font-weight: 600; }
 
-        /* Панель настроек */
-        .settings-box {
+        /* Всплывающая панель настроек */
+        .settings-overlay {
+            position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--sec-bg);
-            border-radius: 20px; padding: 20px; margin-top: 20px;
-            display: none; /* Скрыто по умолчанию */
-            animation: slideUp 0.3s ease-out;
+            border-radius: 30px 30px 0 0;
+            padding: 25px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
         }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .settings-overlay.active { transform: translateY(0); }
 
+        .set-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .set-item {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid var(--glass);
+            padding: 16px 0; border-bottom: 1px solid var(--glass);
         }
-        
-        /* Переключатель (Toggle) */
-        .switch {
-            position: relative; inline-block; width: 40px; height: 20px;
-        }
+
+        /* Красивый Toggle */
+        .switch { position: relative; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #475569; transition: .4s; border-radius: 20px;
+            background-color: #475569; transition: .3s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .close-btn { background: var(--glass); border: none; color: var(--text); padding: 8px 15px; border-radius: 12px; }
     </style>
 </head>
 <body>
-    <canvas id="snow"></canvas>
-    <div class="content">
-        <div class="profile-badge" id="profile-btn">
-            <span id="user-name">...</span>
-            <i class="fa-solid fa-circle-user"></i>
-        </div>
 
-        <div class="header">
-            <div class="balance-card">
-                <div style="font-size: 12px; opacity: 0.8;">ВАШ БАЛАНС</div>
-                <div style="font-size: 36px; font-weight: 800;" id="bal">0.00 ₽</div>
-            </div>
-        </div>
+<canvas id="snow"></canvas>
 
-        <div class="grid" id="main-menu">
-            <div class="card" onclick="showSettings()"><i class="fa-solid fa-sliders"></i><br>Настройки</div>
-            <div class="card"><i class="fa-solid fa-robot"></i><br>Мои боты</div>
-            <div class="card"><i class="fa-solid fa-chart-pie"></i><br>Статистика</div>
-            <div class="card"><i class="fa-solid fa-wallet"></i><br>Выплаты</div>
-        </div>
-
-        <div id="settings-panel" class="settings-box">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <b style="font-size: 18px;">Настройки</b>
-                <i class="fa-solid fa-xmark" onclick="hideSettings()"></i>
-            </div>
-            
-            <div class="set-item">
-                <span>Уведомления</span>
-                <label class="switch">
-                    <input type="checkbox" id="set-notify" onchange="saveSettings()">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="set-item">
-                <span>Эффект снега</span>
-                <label class="switch">
-                    <input type="checkbox" id="set-snow" checked onchange="toggleSnow(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="set-item" style="border:none;">
-                <span>Язык (RU)</span>
-                <i class="fa-solid fa-chevron-right" style="font-size: 12px; opacity: 0.5;"></i>
+<div class="content">
+    <div class="main-card">
+        <div class="profile-section">
+            <div class="avatar-circle" id="user-icon"><i class="fa-solid fa-user-astronaut"></i></div>
+            <div>
+                <div id="user-name" style="font-weight: 700; font-size: 16px;">Загрузка...</div>
+                <div style="font-size: 11px; opacity: 0.7;">Статус: Creator</div>
             </div>
         </div>
+        <div class="balance-label">Чистая прибыль</div>
+        <div class="balance-value" id="bal">0.00 ₽</div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+    <div class="grid">
+        <div class="card" onclick="openSettings()"><i class="fa-solid fa-sliders"></i><span>Настройки</span></div>
+        <div class="card" onclick="tg.HapticFeedback.impactOccurred('light')"><i class="fa-solid fa-robot"></i><span>Мои боты</span></div>
+        <div class="card" onclick="tg.HapticFeedback.impactOccurred('light')"><i class="fa-solid fa-chart-line"></i><span>Статистика</span></div>
+        <div class="card" onclick="tg.HapticFeedback.impactOccurred('light')"><i class="fa-solid fa-money-bill-transfer"></i><span>Выплаты</span></div>
+    </div>
+</div>
 
-        // Отображение данных
-        const user = tg.initDataUnsafe?.user;
-        if(user) {
-            document.getElementById('user-name').innerText = user.first_name;
-            loadData(user.id);
-        }
+<div id="settings-panel" class="settings-overlay">
+    <div class="set-header">
+        <b style="font-size: 20px;">Управление</b>
+        <button class="close-btn" onclick="closeSettings()">Закрыть</button>
+    </div>
+    
+    <div class="set-item">
+        <span>Уведомления о продажах</span>
+        <label class="switch">
+            <input type="checkbox" checked onchange="tg.HapticFeedback.impactOccurred('medium')">
+            <span class="slider"></span>
+        </label>
+    </div>
 
-        function loadData(id) {
-            fetch(`https://твой-воркер.workers.dev/api/creator_stats?id=${id}`)
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('bal').innerText = data.balance.toFixed(2) + ' ₽';
-                    document.getElementById('set-notify').checked = data.settings?.notify || false;
-                });
-        }
+    <div class="set-item">
+        <span>Эффект снега</span>
+        <label class="switch">
+            <input type="checkbox" id="snow-toggle" checked onchange="toggleSnow(this)">
+            <span class="slider"></span>
+        </label>
+    </div>
 
-        function showSettings() {
-            document.getElementById('main-menu').style.opacity = '0.3';
-            document.getElementById('settings-panel').style.display = 'block';
-            tg.HapticFeedback.impactOccurred('medium');
-        }
+    <div class="set-item" style="border:none; opacity: 0.5;">
+        <span>Версия системы</span>
+        <span>2.1.0</span>
+    </div>
+</div>
 
-        function hideSettings() {
-            document.getElementById('main-menu').style.opacity = '1';
-            document.getElementById('settings-panel').style.display = 'none';
-        }
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
 
-        function saveSettings() {
-            const notify = document.getElementById('set-notify').checked;
-            fetch(`https://твой-воркер.workers.dev/api/save_settings`, {
-                method: 'POST',
-                body: JSON.stringify({ id: user.id, notify: notify })
-            });
-            tg.HapticFeedback.notificationOccurred('success');
-        }
+    // Инициализация юзера
+    const user = tg.initDataUnsafe?.user;
+    if(user) {
+        document.getElementById('user-name').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+    }
 
-        function toggleSnow(el) {
-            document.getElementById('snow').style.display = el.checked ? 'block' : 'none';
-        }
+    function openSettings() {
+        document.getElementById('settings-panel').classList.add('active');
+        tg.HapticFeedback.impactOccurred('medium');
+    }
 
-        // --- ЛОГИКА СНЕГА ---
-        const canvas = document.getElementById('snow');
-        const ctx = canvas.getContext('2d');
-        let flakes = [];
-        function initSnow() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            for(let i=0; i<40; i++) flakes.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()+0.5});
-        }
-        function draw() {
-            ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "white"; ctx.beginPath();
-            flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2); f.y+=f.d; if(f.y > canvas.height) f.y = -10; });
-            ctx.fill(); requestAnimationFrame(draw);
-        }
-        initSnow(); draw();
-    </script>
+    function closeSettings() {
+        document.getElementById('settings-panel').classList.remove('active');
+    }
+
+    function toggleSnow(el) {
+        document.getElementById('snow').style.display = el.checked ? 'block' : 'none';
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    // --- СНЕГ (Оптимизированный) ---
+    const canvas = document.getElementById('snow');
+    const ctx = canvas.getContext('2d');
+    let flakes = [];
+    function initSnow() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        flakes = [];
+        for(let i=0; i<35; i++) flakes.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()+0.3});
+    }
+    function draw() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.fillStyle = "rgba(255,255,255,0.7)";
+        ctx.beginPath();
+        flakes.forEach(f => {
+            ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+            f.y += f.d; if(f.y > canvas.height) f.y = -5;
+        });
+        ctx.fill();
+        requestAnimationFrame(draw);
+    }
+    window.onresize = initSnow;
+    initSnow(); draw();
+</script>
+
 </body>
 </html>
