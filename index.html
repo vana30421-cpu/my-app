@@ -7,201 +7,191 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: var(--tg-theme-bg-color, #0f172a);
-            --secondary-bg: var(--tg-theme-secondary-bg-color, #1e293b);
-            --text-color: var(--tg-theme-text-color, #f8fafc);
-            --accent: #38bdf8; /* Голубой неоновый */
-            --glass: rgba(255, 255, 255, 0.05);
+            --bg: var(--tg-theme-bg-color, #0f172a);
+            --sec-bg: var(--tg-theme-secondary-bg-color, #1e293b);
+            --text: var(--tg-theme-text-color, #f8fafc);
+            --accent: #38bdf8;
+            --glass: rgba(255, 255, 255, 0.03);
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg);
+            color: var(--text);
             font-family: 'Inter', sans-serif;
             margin: 0; padding: 16px;
             overflow-x: hidden;
-            user-select: none;
+            animation: fadeIn 0.5s ease-in;
         }
 
-        /* Эффект снега */
-        #snow {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 0;
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Контент поверх снега */
+        #snow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         .content { position: relative; z-index: 1; }
 
-        /* Шапка Креатора */
-        .creator-header {
+        /* Профиль в углу */
+        .profile-badge {
+            position: absolute; top: 0; right: 0;
+            background: var(--glass);
+            padding: 5px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .profile-badge img { width: 24px; height: 24px; border-radius: 50%; }
+
+        .header { margin-top: 40px; margin-bottom: 25px; }
+        .balance-card {
             background: linear-gradient(135deg, #0ea5e9, #2563eb);
             padding: 25px; border-radius: 24px;
-            text-align: left; margin-bottom: 25px;
-            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 15px 30px rgba(14, 165, 233, 0.2);
+            transform: translateY(0);
+            transition: transform 0.3s;
         }
+        .balance-card:active { transform: translateY(5px); }
 
-        .user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
-        .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        
-        .balance-title { font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
-        .balance-main { font-size: 34px; font-weight: 800; }
-
-        /* Сетка управления */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-        .btn-card {
-            background: var(--secondary-bg);
+        /* Сетка меню */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .card {
+            background: var(--sec-bg);
             border: 1px solid var(--glass);
             padding: 20px; border-radius: 20px;
-            display: flex; flex-direction: column; align-items: center;
-            transition: all 0.2s; backdrop-filter: blur(10px);
+            text-align: center; transition: 0.2s;
         }
+        .card:active { transform: scale(0.95); opacity: 0.8; }
+        .card i { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
 
-        .btn-card:active { transform: scale(0.92); background: var(--accent); color: white; }
-
-        .btn-card i { font-size: 26px; margin-bottom: 12px; color: var(--accent); }
-        .btn-card:active i { color: white; }
-        .btn-card span { font-size: 14px; font-weight: 600; }
-
-        /* Кнопка Создать */
-        .create-new {
-            grid-column: span 2;
-            background: rgba(56, 189, 248, 0.1);
-            border: 2px dashed var(--accent);
-            color: var(--accent);
+        /* Панель настроек */
+        .settings-box {
+            background: var(--sec-bg);
+            border-radius: 20px; padding: 20px; margin-top: 20px;
+            display: none; /* Скрыто по умолчанию */
+            animation: slideUp 0.3s ease-out;
         }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Статистика полоской */
-        .stats-bar {
-            margin-top: 25px; background: var(--glass);
-            padding: 15px; border-radius: 15px;
-            display: flex; justify-content: space-around; font-size: 13px;
+        .set-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--glass);
         }
-        .stat-item b { color: var(--accent); display: block; font-size: 16px; }
+        
+        /* Переключатель (Toggle) */
+        .switch {
+            position: relative; inline-block; width: 40px; height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #475569; transition: .4s; border-radius: 20px;
+        }
+        input:checked + .slider { background-color: var(--accent); }
     </style>
 </head>
 <body>
-
     <canvas id="snow"></canvas>
-
     <div class="content">
-        <div class="creator-header">
-            <div class="user-info">
-                <div class="user-avatar"><i class="fa-solid fa-user-gear"></i></div>
-                <div>
-                    <div id="user-name" style="font-weight: 700;">Креатор</div>
-                    <div style="font-size: 11px; opacity: 0.7;">Панель разработчика</div>
-                </div>
-            </div>
-            <div class="balance-title">Ваш доход</div>
-            <div class="balance-main" id="balance">0.00 ₽</div>
+        <div class="profile-badge" id="profile-btn">
+            <span id="user-name">...</span>
+            <i class="fa-solid fa-circle-user"></i>
         </div>
 
-        <div class="grid">
-            <div class="btn-card create-new" onclick="playClick();">
-                <i class="fa-solid fa-plus-circle"></i>
-                <span>Создать нового бота</span>
+        <div class="header">
+            <div class="balance-card">
+                <div style="font-size: 12px; opacity: 0.8;">ВАШ БАЛАНС</div>
+                <div style="font-size: 36px; font-weight: 800;" id="bal">0.00 ₽</div>
+            </div>
+        </div>
+
+        <div class="grid" id="main-menu">
+            <div class="card" onclick="showSettings()"><i class="fa-solid fa-sliders"></i><br>Настройки</div>
+            <div class="card"><i class="fa-solid fa-robot"></i><br>Мои боты</div>
+            <div class="card"><i class="fa-solid fa-chart-pie"></i><br>Статистика</div>
+            <div class="card"><i class="fa-solid fa-wallet"></i><br>Выплаты</div>
+        </div>
+
+        <div id="settings-panel" class="settings-box">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <b style="font-size: 18px;">Настройки</b>
+                <i class="fa-solid fa-xmark" onclick="hideSettings()"></i>
             </div>
             
-            <div class="btn-card" onclick="playClick();">
-                <i class="fa-solid fa-robot"></i>
-                <span>Мои боты</span>
+            <div class="set-item">
+                <span>Уведомления</span>
+                <label class="switch">
+                    <input type="checkbox" id="set-notify" onchange="saveSettings()">
+                    <span class="slider"></span>
+                </label>
             </div>
-
-            <div class="btn-card" onclick="playClick();">
-                <i class="fa-solid fa-gears"></i>
-                <span>Настройки</span>
+            <div class="set-item">
+                <span>Эффект снега</span>
+                <label class="switch">
+                    <input type="checkbox" id="set-snow" checked onchange="toggleSnow(this)">
+                    <span class="slider"></span>
+                </label>
             </div>
-
-            <div class="btn-card" onclick="playClick();">
-                <i class="fa-solid fa-chart-line"></i>
-                <span>Статистика</span>
+            <div class="set-item" style="border:none;">
+                <span>Язык (RU)</span>
+                <i class="fa-solid fa-chevron-right" style="font-size: 12px; opacity: 0.5;"></i>
             </div>
-
-            <div class="btn-card" onclick="playClick();">
-                <i class="fa-solid fa-wallet"></i>
-                <span>Выплаты</span>
-            </div>
-        </div>
-
-        <div class="stats-bar">
-            <div class="stat-item"><span id="bots-count">0</span><b>Ботов</b></div>
-            <div class="stat-item"><span id="users-total">0</span><b>Юзеров</b></div>
-            <div class="stat-item"><span id="days-active">1</span><b>Дней</b></div>
         </div>
     </div>
-
-    <audio id="click-sound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
 
-        // Звук и вибрация
-        function playClick() {
-            const sound = document.getElementById('click-sound');
-            sound.currentTime = 0;
-            sound.play();
+        // Отображение данных
+        const user = tg.initDataUnsafe?.user;
+        if(user) {
+            document.getElementById('user-name').innerText = user.first_name;
+            loadData(user.id);
+        }
+
+        function loadData(id) {
+            fetch(`https://твой-воркер.workers.dev/api/creator_stats?id=${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('bal').innerText = data.balance.toFixed(2) + ' ₽';
+                    document.getElementById('set-notify').checked = data.settings?.notify || false;
+                });
+        }
+
+        function showSettings() {
+            document.getElementById('main-menu').style.opacity = '0.3';
+            document.getElementById('settings-panel').style.display = 'block';
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Данные пользователя
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('user-name').innerText = user.first_name;
-            // Здесь запрос к твоему воркеру для получения статы креатора
-            fetch(`https://твой-воркер.workers.dev/api/creator_stats?id=${user.id}`)
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('balance').innerText = data.balance.toFixed(2) + ' ₽';
-                    document.getElementById('bots-count').innerText = data.botsCount;
-                });
+        function hideSettings() {
+            document.getElementById('main-menu').style.opacity = '1';
+            document.getElementById('settings-panel').style.display = 'none';
         }
 
-        // Логика снега
+        function saveSettings() {
+            const notify = document.getElementById('set-notify').checked;
+            fetch(`https://твой-воркер.workers.dev/api/save_settings`, {
+                method: 'POST',
+                body: JSON.stringify({ id: user.id, notify: notify })
+            });
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        function toggleSnow(el) {
+            document.getElementById('snow').style.display = el.checked ? 'block' : 'none';
+        }
+
+        // --- ЛОГИКА СНЕГА ---
         const canvas = document.getElementById('snow');
         const ctx = canvas.getContext('2d');
         let flakes = [];
-
         function initSnow() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            for(let i=0; i<50; i++) {
-                flakes.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    r: Math.random() * 3 + 1,
-                    d: Math.random() * 1
-                });
-            }
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            for(let i=0; i<40; i++) flakes.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()+0.5});
         }
-
-        function drawSnow() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
-            ctx.beginPath();
-            for(let i=0; i<flakes.length; i++) {
-                let f = flakes[i];
-                ctx.moveTo(f.x, f.y);
-                ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
-            }
-            ctx.fill();
-            moveSnow();
+        function draw() {
+            ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "white"; ctx.beginPath();
+            flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2); f.y+=f.d; if(f.y > canvas.height) f.y = -10; });
+            ctx.fill(); requestAnimationFrame(draw);
         }
-
-        function moveSnow() {
-            for(let i=0; i<flakes.length; i++) {
-                let f = flakes[i];
-                f.y += Math.pow(f.d, 2) + 1;
-                if(f.y > canvas.height) {
-                    flakes[i] = {x: Math.random()*canvas.width, y: 0, r: f.r, d: f.d};
-                }
-            }
-        }
-
-        initSnow();
-        setInterval(drawSnow, 30);
+        initSnow(); draw();
     </script>
 </body>
 </html>
