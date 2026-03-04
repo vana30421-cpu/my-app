@@ -1,3 +1,23 @@
+// Вставь это внутри обработчика обновлений (update)
+if (update.message && update.message.web_app_data) {
+    const userId = update.message.from.id;
+    const webData = update.message.web_app_data.data;
+
+    if (webData.startsWith("msg:")) {
+        const text = webData.replace("msg:", "");
+        // Сохраняем в D1
+        await env.D1.prepare("INSERT INTO messages (userId, text, time) VALUES (?, ?, ?)")
+            .bind(userId, text, new Date().toISOString()).run();
+    }
+}
+
+// Функция рендеринга (вставь её в свой код)
+async function renderWeb(request, env) {
+    const url = new URL(request.url);
+    const balance = url.searchParams.get("balance") || "0.00";
+    const userId = url.searchParams.get("user_id") || "ID";
+
+    return new Response(`
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,104 +27,136 @@
     <style>
         :root {
             --tg-bg: var(--tg-theme-bg-color, #ffffff);
-            --tg-sec-bg: var(--tg-theme-secondary-bg-color, #efeff4);
+            --tg-sec-bg: var(--tg-theme-secondary-bg-color, #f0f0f2);
             --tg-text: var(--tg-theme-text-color, #000000);
-            --tg-hint: var(--tg-theme-hint-color, #8e8e93);
-            --tg-btn: var(--tg-theme-button-color, #007aff);
-            --msg-mine: #dcf8c6;
-            --msg-other: #ffffff;
+            --tg-hint: var(--tg-theme-hint-color, #999999);
+            --tg-link: var(--tg-theme-link-color, #2481cc);
+            --tg-btn: var(--tg-theme-button-color, #2481cc);
+            --tg-btn-text: var(--tg-theme-button-text-color, #ffffff);
         }
 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--tg-bg);
-            color: var(--tg-text);
-            margin: 0; height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column;
+            background-color: var(--tg-bg); color: var(--tg-text);
+            margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* Красивый стекляный Header */
+        /* PREMIUM HEADER */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 16px; background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(20px); border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            position: sticky; top: 0; z-index: 100;
+            padding: 12px 16px; background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 0.5px solid rgba(0,0,0,0.1); z-index: 1000;
         }
 
-        .close-btn {
-            background: #ff3b30; color: white; border: none;
-            width: 28px; height: 28px; border-radius: 50%; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        .header-btn {
+            background: rgba(255, 59, 48, 0.1); color: #ff3b30;
+            border: none; width: 30px; height: 30px; border-radius: 50%;
+            font-weight: bold; display: flex; align-items: center; justify-content: center;
         }
 
-        /* Экраны */
-        .screen { display: none; flex-direction: column; height: 100%; animation: slide 0.3s ease; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .u-avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--tg-btn); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .u-info { line-height: 1.1; }
+        .u-name { font-size: 14px; font-weight: 600; display: block; }
+        .u-status { font-size: 11px; color: #34c759; }
+
+        /* SCREENS */
+        .screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.2s ease; }
         .screen.active { display: flex; }
-        @keyframes slide { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Список чатов */
+        /* LIST OF CHATS */
+        .chat-list { flex: 1; overflow-y: auto; }
         .chat-item {
-            display: flex; align-items: center; padding: 12px 16px; gap: 15px;
-            border-bottom: 0.5px solid rgba(0,0,0,0.05); transition: 0.2s;
+            display: flex; align-items: center; padding: 10px 16px; gap: 12px;
+            border-bottom: 0.5px solid rgba(0,0,0,0.05);
         }
         .chat-item:active { background: rgba(0,0,0,0.05); }
-        .avatar {
-            width: 52px; height: 52px; border-radius: 50%;
-            background: linear-gradient(135deg, #007aff, #5ac8fa);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: bold; font-size: 20px;
-            box-shadow: 0 4px 10px rgba(0,122,255,0.3);
-        }
+        .c-icon { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
+        .c-details { flex: 1; border-bottom: none; }
+        .c-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .c-title { font-weight: 600; font-size: 16px; }
+        .c-msg { font-size: 14px; color: var(--tg-hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
-        /* Сообщения */
-        #chat-body { flex: 1; overflow-y: auto; padding: 15px; background: var(--tg-sec-bg); display: flex; flex-direction: column; gap: 10px; }
-        .bubble {
-            max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 15px;
-            line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .bubble.mine { align-self: flex-end; background: var(--msg-mine); border-bottom-right-radius: 4px; }
-        .bubble.other { align-self: flex-start; background: var(--msg-other); border-bottom-left-radius: 4px; }
+        /* CHAT WINDOW */
+        #chat-area { flex: 1; overflow-y: auto; padding: 15px; background: var(--tg-sec-bg); display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 75%; padding: 8px 12px; border-radius: 16px; font-size: 15px; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
+        .msg.mine { align-self: flex-end; background: #effdde; color: #000; border-bottom-right-radius: 4px; }
+        .msg.other { align-self: flex-start; background: #fff; color: #000; border-bottom-left-radius: 4px; }
 
-        /* Поле ввода */
-        .input-bar {
-            padding: 10px 15px; background: var(--tg-bg); display: flex; gap: 10px;
-            padding-bottom: env(safe-area-inset-bottom, 10px); align-items: center;
-        }
-        #msg-input {
-            flex: 1; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px;
-            padding: 10px 15px; outline: none; background: var(--tg-sec-bg);
-        }
+        /* INPUT BAR */
+        .input-bar { padding: 8px 12px; background: var(--tg-bg); display: flex; align-items: center; gap: 10px; padding-bottom: env(safe-area-inset-bottom, 8px); }
+        #msg-input { flex: 1; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 10px 15px; background: var(--tg-sec-bg); outline: none; }
+        .send-btn { background: var(--tg-btn); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 18px; }
+
+        /* PROFILE SCREEN */
+        .prof-card { padding: 20px; text-align: center; }
+        .prof-avatar { width: 100px; height: 100px; border-radius: 50%; background: var(--tg-btn); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white; }
     </style>
 </head>
 <body>
 
     <div id="screen-list" class="screen active">
         <div class="header">
-            <button class="close-btn" onclick="tg.close()">✕</button>
-            <div style="text-align: right;">
-                <b id="user-name">Загрузка...</b>
-                <div style="font-size: 12px; color: #34c759;" id="user-bal">0.00 ₽</div>
+            <button class="header-btn" onclick="tg.close()">✕</button>
+            <div class="user-profile" onclick="showScreen('screen-profile')">
+                <div class="u-info">
+                    <span class="u-name" id="u-name-top">Загрузка...</span>
+                    <span class="u-status">Профиль</span>
+                </div>
+                <div class="u-avatar" id="u-avatar-top">?</div>
             </div>
         </div>
-        <div class="chat-item" onclick="openChat('Общий Чат')">
-            <div class="avatar">💬</div>
-            <div style="flex: 1;">
-                <div style="font-weight: 600;">Общий Чат</div>
-                <div style="font-size: 14px; color: var(--tg-hint);">Нажмите, чтобы войти</div>
+        <div class="chat-list">
+            <div class="chat-item" onclick="openChat('Общий Чат', 'linear-gradient(135deg, #62b4ff, #2481cc)')">
+                <div class="c-icon" style="background: linear-gradient(135deg, #62b4ff, #2481cc);">🌐</div>
+                <div class="c-details">
+                    <div class="c-row"><span class="c-title">Общий Чат</span><span style="font-size:12px; color:var(--tg-hint)">online</span></div>
+                    <div class="c-msg">Все пользователи здесь</div>
+                </div>
+            </div>
+            <div class="chat-item" onclick="openChat('Поддержка', 'linear-gradient(135deg, #ff9500, #ffcc00)')">
+                <div class="c-icon" style="background: linear-gradient(135deg, #ff9500, #ffcc00);">👨‍💻</div>
+                <div class="c-details">
+                    <div class="c-row"><span class="c-title">Поддержка</span><span style="font-size:12px; color:var(--tg-hint)">24/7</span></div>
+                    <div class="c-msg">Напишите нам по любому вопросу</div>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="screen-chat" class="screen">
         <div class="header">
-            <button onclick="showScreen('screen-list')" style="background:none; border:none; color:var(--tg-link); font-size:16px;">❮ Назад</button>
-            <b id="chat-title">Чат</b>
-            <div style="width: 40px;"></div>
+            <button class="header-btn" style="background:none; color:var(--tg-link); font-size:16px; width:auto;" onclick="showScreen('screen-list')">❮ Назад</button>
+            <b id="active-chat-title">Чат</b>
+            <div style="width:50px"></div>
         </div>
-        <div id="chat-body"></div>
+        <div id="chat-area"></div>
         <div class="input-bar">
             <input type="text" id="msg-input" placeholder="Сообщение...">
-            <button onclick="send()" style="background:var(--tg-btn); color:white; border:none; width:35px; height:35px; border-radius:50%;">➔</button>
+            <button class="send-btn" onclick="sendMsg()">➔</button>
+        </div>
+    </div>
+
+    <div id="screen-profile" class="screen">
+        <div class="header">
+            <button class="header-btn" style="background:none; color:var(--tg-link); font-size:16px; width:auto;" onclick="showScreen('screen-list')">❮ Назад</button>
+            <b>Мой Профиль</b>
+            <div style="width:50px"></div>
+        </div>
+        <div class="prof-card">
+            <div class="prof-avatar" id="p-avatar">?</div>
+            <h2 id="p-name">Имя Фамилия</h2>
+            <div style="background:var(--tg-sec-bg); padding:15px; border-radius:15px; margin-bottom:10px;">
+                <div style="font-size:12px; color:var(--tg-hint)">Ваш ID</div>
+                <div style="font-weight:bold">${userId}</div>
+            </div>
+            <div style="background:var(--tg-sec-bg); padding:15px; border-radius:15px;">
+                <div style="font-size:12px; color:var(--tg-hint)">Баланс</div>
+                <div style="font-weight:bold; color:#34c759;">${balance} ₽</div>
+            </div>
         </div>
     </div>
 
@@ -113,12 +165,14 @@
         tg.expand();
         tg.ready();
 
-        // Подгружаем данные пользователя
         const user = tg.initDataUnsafe?.user;
         if (user) {
-            document.getElementById('user-name').innerText = user.first_name;
-            // Отправляем боту сигнал о входе, чтобы он зарегистрировал в D1
-            tg.sendData("auth_login:" + user.id);
+            const name = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+            document.getElementById('u-name-top').innerText = name;
+            document.getElementById('p-name').innerText = name;
+            const letter = user.first_name.charAt(0).toUpperCase();
+            document.getElementById('u-avatar-top').innerText = letter;
+            document.getElementById('p-avatar').innerText = letter;
         }
 
         function showScreen(id) {
@@ -126,27 +180,34 @@
             document.getElementById(id).classList.add('active');
         }
 
-        function openChat(name) {
-            document.getElementById('chat-title').innerText = name;
+        function openChat(name, color) {
+            document.getElementById('active-chat-title').innerText = name;
             showScreen('screen-chat');
         }
 
-        function send() {
-            const inp = document.getElementById('msg-input');
-            const val = inp.value.trim();
-            if(!val) return;
+        function sendMsg() {
+            const input = document.getElementById('msg-input');
+            const val = input.value.trim();
+            if (!val) return;
 
-            // Добавляем в интерфейс мгновенно
-            const body = document.getElementById('chat-body');
-            body.innerHTML += `<div class="bubble mine">${val}</div>`;
-            body.scrollTop = body.scrollHeight;
+            const area = document.getElementById('chat-area');
+            const div = document.createElement('div');
+            div.className = 'msg mine';
+            div.innerText = val;
+            area.appendChild(div);
             
-            // РЕАЛЬНАЯ ОТПРАВКА БОТУ
-            tg.sendData("msg:" + val);
+            tg.sendData("msg:" + val); // Реальная отправка боту
             
-            inp.value = "";
+            input.value = "";
+            area.scrollTop = area.scrollHeight;
             tg.HapticFeedback.impactOccurred('light');
         }
+
+        document.getElementById('msg-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMsg();
+        });
     </script>
 </body>
 </html>
+    `, { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+}
