@@ -1,210 +1,212 @@
+async renderWeb(request, env) {
+    const url = new URL(request.url);
+    const balance = url.searchParams.get("balance") || "0.00";
+
+    return new Response(`
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --bg: var(--tg-theme-bg-color, #0a0f1e);
-            --sec-bg: var(--tg-theme-secondary-bg-color, #161e2d);
-            --text: var(--tg-theme-text-color, #ffffff);
-            --accent: #38bdf8;
-            --glass: rgba(255, 255, 255, 0.04);
+            --bg: var(--tg-theme-bg-color, #ffffff);
+            --sec-bg: var(--tg-theme-secondary-bg-color, #f0f0f2);
+            --text: var(--tg-theme-text-color, #000000);
+            --hint: var(--tg-theme-hint-color, #999999);
+            --accent: var(--tg-theme-button-color, #2481cc);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
         }
 
         body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            font-family: 'Inter', sans-serif;
             margin: 0; padding: 0;
-            overflow: hidden; height: 100vh;
+            height: 100vh; display: flex; flex-direction: column;
+            overflow: hidden;
         }
 
-        #snow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        /* --- UI ЭЛЕМЕНТЫ --- */
+        .screen { display: none; flex-direction: column; height: 100%; }
+        .screen.active { display: flex; }
 
-        .top-bar {
-            position: fixed; top: 0; width: 100%; height: 50px;
+        .header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; z-index: 100; box-sizing: border-box;
-            background: var(--bg);
-        }
-        .icon-btn { background: var(--glass); border: none; color: var(--text); width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-
-        .screen-container {
-            position: relative; z-index: 10; height: 100vh;
-            padding: 60px 16px 140px 16px; box-sizing: border-box;
-            overflow-y: auto;
+            padding: 10px 15px; background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.1);
         }
 
-        .screen { display: none; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ОБНОВЛЕННЫЙ ПРОФИЛЬ */
-        .profile-header {
-            background: linear-gradient(135deg, #0ea5e9, #6366f1);
-            border-radius: 24px; padding: 20px;
-            margin-bottom: 20px; display: flex; align-items: center; gap: 15px;
-            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.25);
+        .close-btn {
+            background: rgba(255, 59, 48, 0.1); color: #ff3b30;
+            border: none; border-radius: 50%; width: 32px; height: 32px; font-weight: bold;
         }
-        .user-ava { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
-        .user-data { flex-grow: 1; }
-        .u-id-tag { font-size: 9px; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px; margin-top: 4px; display: inline-block; font-family: monospace; }
 
-        .card-box { background: var(--sec-bg); border-radius: 22px; padding: 5px 18px; border: 1px solid var(--glass); margin-bottom: 12px; }
-        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .row-item:last-child { border: none; }
+        .profile-top { text-align: right; line-height: 1.2; }
+        .p-name { font-weight: 700; font-size: 14px; display: block; }
+        .p-bal { color: #34c759; font-size: 12px; font-weight: bold; }
 
-        .nav-dock {
-            position: fixed; bottom: 20px; left: 16px; right: 16px;
-            background: rgba(22, 30, 45, 0.9); backdrop-filter: blur(20px);
-            display: flex; justify-content: space-around;
-            padding: 12px 5px; border-radius: 24px;
-            border: 1px solid var(--glass); z-index: 1000;
+        /* --- ЭКРАН 1: РЕГИСТРАЦИЯ --- */
+        .auth-container { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px; text-align: center; }
+        .auth-logo { font-size: 60px; margin-bottom: 20px; }
+        .input-main {
+            padding: 12px; border-radius: 10px; border: 1px solid #ddd;
+            margin-bottom: 15px; font-size: 16px; width: 100%; box-sizing: border-box;
         }
-        .nav-link { color: var(--text); opacity: 0.4; text-align: center; flex: 1; cursor: pointer; transition: 0.2s; }
-        .nav-link.active { opacity: 1; color: var(--accent); }
-        .nav-link i { font-size: 20px; display: block; margin-bottom: 4px; }
-        .nav-link span { font-size: 9px; font-weight: 600; text-transform: uppercase; }
-
-        .footer { text-align: center; font-size: 10px; opacity: 0.3; padding: 20px 0; letter-spacing: 1px; font-weight: 700; }
-
-        input[type="checkbox"] {
-            appearance: none; width: 40px; height: 20px; background: #334155;
-            border-radius: 20px; position: relative; cursor: pointer;
+        .btn-main {
+            background: var(--accent); color: var(--accent-text);
+            border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;
         }
-        input[type="checkbox"]:checked { background: var(--accent); }
-        input[type="checkbox"]::before { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
-        input[type="checkbox"]:checked::before { left: 23px; }
+
+        /* --- ЭКРАН 2: СПИСОК ЧАТОВ --- */
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item {
+            display: flex; align-items: center; padding: 12px 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer;
+        }
+        .chat-item:active { background: rgba(0,0,0,0.05); }
+        .avatar {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--accent); color: white;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; margin-right: 15px;
+        }
+        .chat-info { flex: 1; overflow: hidden; }
+        .chat-name { font-weight: 700; font-size: 16px; margin-bottom: 3px; }
+        .chat-last-msg { font-size: 13px; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- ЭКРАН 3: ОКНО ЧАТА --- */
+        #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: var(--sec-bg); }
+        .bubble {
+            max-width: 80%; padding: 8px 12px; border-radius: 15px; font-size: 14px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;
+        }
+        .bubble.mine { align-self: flex-end; background: #dcf8c6; color: #000; border-bottom-right-radius: 2px; }
+        .bubble.other { align-self: flex-start; background: #fff; color: #000; border-bottom-left-radius: 2px; }
+        
+        .input-area {
+            padding: 10px; background: var(--bg); display: flex; gap: 10px;
+            border-top: 1px solid rgba(0,0,0,0.1); padding-bottom: env(safe-area-inset-bottom, 10px);
+        }
+        #msg-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 8px 15px; outline: none; }
     </style>
 </head>
 <body>
 
-<canvas id="snow"></canvas>
-
-<div class="top-bar">
-    <button class="icon-btn" onclick="tg.close()"><i class="fa-solid fa-xmark"></i></button>
-    <div style="font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--accent);">BOTFACTORY SYSTEM</div>
-    <button class="icon-btn" onclick="tg.close()"><i class="fa-solid fa-minus"></i></button>
-</div>
-
-<div class="screen-container">
-
-    <div id="common-profile" class="profile-header">
-        <img id="u-ava" class="user-ava" src="https://ui-avatars.com/api/?name=B&background=0ea5e9&color=fff">
-        <div class="user-data">
-            <div id="u-nick" style="font-weight: 800; font-size: 17px;">@loading...</div>
-            <div class="u-id-tag">ID: <span id="u-id">00000000</span></div>
-        </div>
-        <div style="text-align: right;">
-            <div style="font-size: 9px; opacity: 0.7;">БАЛАНС</div>
-            <div style="font-size: 18px; font-weight: 900;">0.00 ₽</div>
+    <div id="screen-auth" class="screen active">
+        <div class="auth-container">
+            <div class="auth-logo">💬</div>
+            <h2>Messenger Web</h2>
+            <p style="color: var(--hint)">Введите никнейм для входа в сеть</p>
+            <input type="text" id="reg-name" class="input-main" placeholder="Ваше имя...">
+            <button class="btn-main" onclick="completeAuth()">Зарегистрироваться</button>
         </div>
     </div>
 
-    <div id="scr-bots" class="screen active">
-        <h3>Мои боты</h3>
-        <div class="card-box" style="padding: 40px 10px; text-align: center; opacity: 0.5;">
-            <i class="fa-solid fa-box-open" style="font-size: 30px; margin-bottom: 10px;"></i><br>
-            <span style="font-size: 13px;">Боты не обнаружены</span>
-        </div>
-        <div class="footer">© BOTFACTORY. Все права защищены</div>
-    </div>
-
-    <div id="scr-add" class="screen">
-        <h3>Конструктор функций</h3>
-        <div class="card-box">
-            <div class="row-item"><span>🚀 Быстрый запуск</span><i class="fa-solid fa-rocket"></i></div>
-            <div class="row-item"><span>📢 Модуль рассылок</span><i class="fa-solid fa-bullhorn"></i></div>
-            <div class="row-item"><span>🔑 API Интеграция</span><i class="fa-solid fa-code"></i></div>
-            <div class="row-item"><span>💳 Платежные системы</span><i class="fa-solid fa-credit-card"></i></div>
-        </div>
-        <div class="footer">© BOTFACTORY. Все права защищены</div>
-    </div>
-
-    <div id="scr-stat" class="screen">
-        <h3>Глобальная стата</h3>
-        <div class="card-box">
-            <div class="row-item"><span>Активных сессий</span><b>0</b></div>
-            <div class="row-item"><span>Всего транзакций</span><b>0</b></div>
-            <div class="row-item"><span>Нагрузка CPU</span><b>2%</b></div>
-        </div>
-        <div class="footer">© BOTFACTORY. Все права защищены</div>
-    </div>
-
-    <div id="scr-info" class="screen">
-        <h3>Система</h3>
-        <div class="card-box">
-            <div class="row-item"><span>Версия ядра</span><span style="color:#10b981">0.1 BETA</span></div>
-            <div class="row-item" onclick="tg.openTelegramLink('https://t.me/Egorikvr')">
-                <span>Тех. поддержка</span><span style="color:var(--accent)">@Egorikvr</span>
+    <div id="screen-list" class="screen">
+        <div class="header">
+            <button class="close-btn" onclick="tg.close()">✕</button>
+            <div class="profile-top">
+                <span class="p-name" id="top-name">User</span>
+                <span class="p-bal">${balance} ₽</span>
             </div>
-            <div class="row-item"><span>База данных</span><span style="color:#fbbf24">D1 Cloud</span></div>
         </div>
-        <div class="footer">© BOTFACTORY. Все права защищены</div>
+        <div class="chat-list">
+            <div class="chat-item" onclick="openChat('Тех. Поддержка', 'ТП')">
+                <div class="avatar" style="background: #ff9500;">ТП</div>
+                <div class="chat-info">
+                    <div class="chat-name">Тех. Поддержка</div>
+                    <div class="chat-last-msg">Здравствуйте! Чем могу помочь?</div>
+                </div>
+            </div>
+            <div class="chat-item" onclick="openChat('Общий чат', 'ОЧ')">
+                <div class="avatar">ОЧ</div>
+                <div class="chat-info">
+                    <div class="chat-name">Общий чат</div>
+                    <div class="chat-last-msg" id="last-global">Нажмите, чтобы войти в чат...</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="scr-sets" class="screen">
-        <h3>Конфигурация</h3>
-        <div class="card-box">
-            <div class="row-item"><span>Уведомления</span><input type="checkbox" checked></div>
-            <div class="row-item"><span>Эффект снега</span><input type="checkbox" checked onchange="setSnow(this)"></div>
-            <div class="row-item"><span>Авто-обновление</span><input type="checkbox" checked></div>
-            <div class="row-item"><span>Безопасный режим</span><input type="checkbox"></div>
+    <div id="screen-chat" class="screen">
+        <div class="header">
+            <button class="close-btn" onclick="showScreen('screen-list')">←</button>
+            <div class="profile-top" style="text-align: center; flex: 1;">
+                <span class="p-name" id="chat-title">Чат</span>
+                <span style="font-size: 10px; color: #34c759;">онлайн</span>
+            </div>
+            <div style="width: 32px;"></div>
+        </div>
+        <div id="messages"></div>
+        <div class="input-area">
+            <input type="text" id="msg-input" placeholder="Сообщение...">
+            <button class="btn-main" style="border-radius: 50%; width: 40px;" onclick="sendMsg()">➔</button>
         </div>
     </div>
 
-</div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
 
-<div class="nav-dock">
-    <div class="nav-link" onclick="tab('add', this)"><i class="fa-solid fa-plus-square"></i><span>Создать</span></div>
-    <div class="nav-link active" onclick="tab('bots', this)"><i class="fa-solid fa-robot"></i><span>Боты</span></div>
-    <div class="nav-link" onclick="tab('sets', this)"><i class="fa-solid fa-sliders"></i><span>Сеты</span></div>
-    <div class="nav-link" onclick="tab('stat', this)"><i class="fa-solid fa-chart-pie"></i><span>Стата</span></div>
-    <div class="nav-link" onclick="tab('info', this)"><i class="fa-solid fa-microchip"></i><span>Инфо</span></div>
-</div>
+        let userName = "";
 
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+        // Функция переключения экранов
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
-    const user = tg.initDataUnsafe?.user;
-    if(user) {
-        document.getElementById('u-nick').innerText = user.username ? '@' + user.username : user.first_name;
-        document.getElementById('u-id').innerText = user.id;
-        if(user.photo_url) document.getElementById('u-ava').src = user.photo_url;
-    }
+        // 1. Регистрация
+        function completeAuth() {
+            const input = document.getElementById('reg-name');
+            userName = input.value.trim() || (tg.initDataUnsafe?.user?.first_name) || "Аноним";
+            document.getElementById('top-name').innerText = userName;
+            tg.HapticFeedback.notificationOccurred('success');
+            showScreen('screen-list');
+        }
 
-    function tab(name, el) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        document.getElementById('common-profile').style.display = (name === 'sets') ? 'none' : 'flex';
-        document.getElementById('scr-' + name).classList.add('active');
-        el.classList.add('active');
-        tg.HapticFeedback.impactOccurred('light');
-    }
+        // 2. Открытие чата
+        function openChat(name, short) {
+            document.getElementById('chat-title').innerText = name;
+            const msgs = document.getElementById('messages');
+            msgs.innerHTML = '<div class="bubble other">Добро пожаловать в ' + name + '!</div>';
+            showScreen('screen-chat');
+        }
 
-    function setSnow(el) {
-        document.getElementById('snow').style.display = el.checked ? 'block' : 'none';
-    }
+        // 3. Отправка сообщения
+        function sendMsg() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if(!text) return;
 
-    const canvas = document.getElementById('snow');
-    const ctx = canvas.getContext('2d');
-    let flakes = [];
-    function init() {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        flakes = [];
-        for(let i=0; i<25; i++) flakes.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.5+0.5, d: Math.random()*0.5+0.2});
-    }
-    function render() {
-        ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2); f.y+=f.d; if(f.y > canvas.height) f.y = -5; });
-        ctx.fill(); requestAnimationFrame(render);
-    }
-    window.onresize = init; init(); render();
-</script>
+            const msgs = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = 'bubble mine';
+            div.innerText = text;
+            msgs.appendChild(div);
+            
+            input.value = "";
+            msgs.scrollTop = msgs.scrollHeight;
+            
+            tg.HapticFeedback.impactOccurred('light');
 
+            // Отправка боту для синхронизации (если нужно)
+            tg.sendData("chat_msg:" + text);
+        }
+
+        // Если пользователь уже есть в ТГ, подставляем его имя
+        if (tg.initDataUnsafe?.user) {
+            document.getElementById('reg-name').value = tg.initDataUnsafe.user.first_name;
+        }
+
+        // Enter для отправки
+        document.getElementById('msg-input').addEventListener("keypress", (e) => {
+            if(e.key === "Enter") sendMsg();
+        });
+    </script>
 </body>
 </html>
+    `, { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+}
